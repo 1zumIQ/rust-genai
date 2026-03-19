@@ -27,6 +27,9 @@ pub struct ChatOptions {
 	/// Nucleus sampling (top-p), if supported.
 	pub top_p: Option<f64>,
 
+	/// Preferred input media sampling resolution, when supported by the provider.
+	pub media_resolution: Option<MediaResolution>,
+
 	/// Sequences that halt generation when encountered.
 	pub stop_sequences: Vec<String>,
 
@@ -95,6 +98,12 @@ impl ChatOptions {
 	/// Sets nucleus sampling (top-p).
 	pub fn with_top_p(mut self, value: f64) -> Self {
 		self.top_p = Some(value);
+		self
+	}
+
+	/// Sets the preferred input media sampling resolution.
+	pub fn with_media_resolution(mut self, value: MediaResolution) -> Self {
+		self.media_resolution = Some(value);
 		self
 	}
 
@@ -446,6 +455,42 @@ impl std::str::FromStr for ServiceTier {
 
 // endregion: --- ServiceTier
 
+// region:    --- MediaResolution
+
+/// Provider-specific hint for the resolution used to sample input media.
+///
+/// Currently mapped only for Gemini `generationConfig.mediaResolution`.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MediaResolution {
+	Low,
+	Medium,
+	High,
+}
+
+impl MediaResolution {
+	/// Returns the keyword for API usage.
+	pub fn as_keyword(&self) -> &'static str {
+		match self {
+			MediaResolution::Low => "MEDIA_RESOLUTION_LOW",
+			MediaResolution::Medium => "MEDIA_RESOLUTION_MEDIUM",
+			MediaResolution::High => "MEDIA_RESOLUTION_HIGH",
+		}
+	}
+}
+
+impl std::fmt::Display for MediaResolution {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let value = match self {
+			MediaResolution::Low => "low",
+			MediaResolution::Medium => "medium",
+			MediaResolution::High => "high",
+		};
+		write!(f, "{value}")
+	}
+}
+
+// endregion: --- MediaResolution
+
 // region:    --- ChatOptionsSet
 
 /// This is an internal crate struct to resolve the ChatOptions value in a cascading manner.
@@ -485,6 +530,12 @@ impl ChatOptionsSet<'_, '_> {
 		self.chat
 			.and_then(|chat| chat.top_p)
 			.or_else(|| self.client.and_then(|client| client.top_p))
+	}
+
+	pub fn media_resolution(&self) -> Option<&MediaResolution> {
+		self.chat
+			.and_then(|chat| chat.media_resolution.as_ref())
+			.or_else(|| self.client.and_then(|client| client.media_resolution.as_ref()))
 	}
 
 	pub fn stop_sequences(&self) -> &[String] {

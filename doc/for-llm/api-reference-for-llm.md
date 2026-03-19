@@ -231,6 +231,7 @@ All fields are `Option<T>` (unset = defer to client default or provider default)
 - `response_format`: `ChatResponseFormat::JsonMode` or `JsonSpec(name, schema)`.
 - `reasoning_effort`: `ReasoningEffort` enum.
 - `verbosity`: `Verbosity` enum (e.g., for GPT-5).
+- `media_resolution`: `MediaResolution` enum (currently mapped for Gemini).
 - `normalize_reasoning_content`: Extract `<think>` blocks into response field.
 - `capture_usage`, `capture_content`, `capture_reasoning_content`, `capture_tool_calls`: (Streaming) Accumulate results in `StreamEnd`.
 - `capture_raw_body`: Capture raw HTTP response body.
@@ -239,7 +240,7 @@ All fields are `Option<T>` (unset = defer to client default or provider default)
 - `prompt_cache_key`: OpenAI prompt cache key.
 - `cache_control`: `CacheControl` request-level cache preference.
 - `extra_headers`: `Headers` added to the request.
-- **Chainable setters**: `with_temperature(f64)`, `with_max_tokens(u32)`, `with_top_p(f64)`, `with_capture_usage(bool)`, `with_capture_content(bool)`, `with_capture_reasoning_content(bool)`, `with_capture_tool_calls(bool)`, `with_capture_raw_body(bool)`, `with_stop_sequences(vec)`, `with_normalize_reasoning_content(bool)`, `with_response_format(format)`, `with_reasoning_effort(effort)`, `with_verbosity(v)`, `with_seed(u64)`, `with_service_tier(tier)`, `with_prompt_cache_key(key)`, `with_cache_control(cache_control)`, `with_extra_headers(headers)`.
+- **Chainable setters**: `with_temperature(f64)`, `with_max_tokens(u32)`, `with_top_p(f64)`, `with_media_resolution(media_resolution)`, `with_capture_usage(bool)`, `with_capture_content(bool)`, `with_capture_reasoning_content(bool)`, `with_capture_tool_calls(bool)`, `with_capture_raw_body(bool)`, `with_stop_sequences(vec)`, `with_normalize_reasoning_content(bool)`, `with_response_format(format)`, `with_reasoning_effort(effort)`, `with_verbosity(v)`, `with_seed(u64)`, `with_service_tier(tier)`, `with_prompt_cache_key(key)`, `with_cache_control(cache_control)`, `with_extra_headers(headers)`.
 - Deprecated: `with_json_mode(bool)` in favor of `with_response_format(ChatResponseFormat::JsonMode)`.
 
 ### `ChatResponseFormat`
@@ -273,6 +274,13 @@ Provider-specific verbosity hint.
 - Variants: `Low`, `Medium`, `High`.
 - `variant_name()`, `as_keyword()`, `from_keyword(name)`, `from_model_name(model_name)`.
 - Implements `Display`, `FromStr`.
+
+### `MediaResolution`
+
+Provider-specific hint for input media sampling resolution.
+
+- Variants: `Low`, `Medium`, `High`.
+- `as_keyword()` returns the API enum keyword, e.g. `MEDIA_RESOLUTION_HIGH(GEMINI)`.
 
 ### `ServiceTier`
 

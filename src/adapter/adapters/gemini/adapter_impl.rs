@@ -231,6 +231,9 @@ impl Adapter for GeminiAdapter {
 		if let Some(top_p) = options_set.top_p() {
 			payload.x_insert("/generationConfig/topP", top_p)?;
 		}
+		if let Some(media_resolution) = options_set.media_resolution() {
+			payload.x_insert("/generationConfig/mediaResolution", media_resolution.as_keyword())?;
+		}
 
 		// -- url
 		let provider_model = model.from_name(provider_model_name);
@@ -898,6 +901,16 @@ fn take_bool(v: &mut Value, key: &str) -> bool {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::chat::{ChatMessage, ChatOptions, MediaResolution};
+	use value_ext::JsonValueExt;
+
+	fn test_service_target(model_name: &'static str) -> ServiceTarget {
+		ServiceTarget {
+			endpoint: GeminiAdapter::default_endpoint(),
+			auth: AuthData::from_single("test-api-key"),
+			model: ModelIden::new(AdapterKind::Gemini, model_name),
+		}
+	}
 
 	#[test]
 	fn merge_consecutive_tool_responses() {
@@ -1039,5 +1052,22 @@ mod tests {
 			Ok(_) => panic!("missing candidates should still be rejected"),
 		};
 		assert!(matches!(err, Error::ChatResponse { .. }));
+	}
+
+	#[test]
+	fn to_web_request_data_sets_generation_config_media_resolution() {
+		let target = test_service_target("gemini-2.5-flash");
+		let chat_req = ChatRequest::new(vec![ChatMessage::user("Describe this image")]);
+		let options = ChatOptions::default().with_media_resolution(MediaResolution::High);
+		let options_set = ChatOptionsSet::default().with_chat_options(Some(&options));
+
+		let req = GeminiAdapter::to_web_request_data(target, ServiceType::Chat, chat_req, options_set)
+			.expect("Gemini request payload should be built");
+
+		let media_resolution: String = req
+			.payload
+			.x_get("/generationConfig/mediaResolution")
+			.expect("generationConfig.mediaResolution should be set");
+		assert_eq!(media_resolution, "MEDIA_RESOLUTION_HIGH");
 	}
 }

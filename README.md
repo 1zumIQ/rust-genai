@@ -195,6 +195,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 | `temperature` | `temperature`           | `temperature`               | `temperature`              | `temperature` |
 | `max_tokens`  | `max_tokens`            | `max_tokens` (default 1024) | `maxOutputTokens`          | `max_tokens`  |
 | `top_p`       | `top_p`                 | `top_p`                     | `topP`                     | `p`           |
+| `media_resolution` | -                  | -                           | `mediaResolution`          | -             |
 
 ## Usage
 
